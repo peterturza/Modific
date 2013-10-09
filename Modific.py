@@ -431,9 +431,9 @@ class HlChangesCommand(DiffCommand, sublime_plugin.TextCommand):
             else:
                 icon = '../Modific/icons/' + hl_key
         points = [self.view.text_point(l - 1, 0) for l in lines]
-        regions = [sublime.Region(p, p) for p in points]
+        regions = [self.view.line(p) for p in points]
         self.view.add_regions(hl_key, regions, "markup.%s.diff" % hl_key,
-            icon, sublime.HIDDEN | sublime.DRAW_EMPTY)
+            icon, sublime.DRAW_NO_FILL | sublime.DRAW_NO_OUTLINE)
 
     def diff_done(self, diff):
         if diff and '@@' not in diff:
@@ -449,6 +449,10 @@ class HlChangesCommand(DiffCommand, sublime_plugin.TextCommand):
 
         if self.settings.get('debug'):
             print(inserted, changed, deleted)
+        if inserted or deleted or changed:
+            self.view.set_status("modified", "MODIFIED")
+        else:
+            self.view.erase_status("modified")
         self.hl_lines(inserted, 'inserted')
         self.hl_lines(deleted, 'deleted')
         self.hl_lines(changed, 'changed')
